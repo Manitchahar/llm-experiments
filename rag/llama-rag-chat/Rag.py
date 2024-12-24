@@ -9,7 +9,7 @@ import pandas as pd
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain.memory import ConversationBufferWindowMemory
+from langchain.memory import ConversationBufferMemory
 
 # Load environment variables
 load_dotenv()
@@ -74,7 +74,7 @@ class PDFQA:
             model_name="sentence-transformers/all-MiniLM-L6-v2",
             model_kwargs={'device': 'cpu'}
         )
-        self.memory = ConversationBufferWindowMemory(k=10)  # Correct initialization
+        self.memory = ConversationBufferMemory(max_token_limit=10)  # Updated initialization
 
     @staticmethod
     def initialize_session_state():
