@@ -74,7 +74,7 @@ class PDFQA:
             model_name="sentence-transformers/all-MiniLM-L6-v2",
             model_kwargs={'device': 'cpu'}
         )
-        self.memory = ConversationBufferMemory(max_token_limit=10)  # Updated initialization
+        self.memory = ConversationBufferWindowMemory(k=10)  # Correct initialization
 
     @staticmethod
     def initialize_session_state():
