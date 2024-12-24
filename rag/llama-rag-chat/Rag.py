@@ -13,9 +13,11 @@ from langchain.memory import ConversationBufferWindowMemory
 
 # Load environment variables
 load_dotenv()
+# Display beta development notice
+st.info("This app is in beta development.")
 
 # Constants
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
 if not GROQ_API_KEY:
     raise ValueError("GROQ_API_KEY not found in environment variables")
 
