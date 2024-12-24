@@ -12,12 +12,16 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.memory import ConversationBufferMemory
 
 # Load environment variables
-load_dotenv()
+load_dotenv(verbose=True)  # Add verbose=True for debugging
 
 # Constants
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 if not GROQ_API_KEY:
-    raise ValueError("GROQ_API_KEY not found in environment variables")
+    st.error("GROQ_API_KEY not found in environment variables. Please check your .env file.")
+    st.stop()
+
+# Print for debugging (remove in production)
+print(f"API Key loaded: {GROQ_API_KEY[:8]}...")
 
 AVAILABLE_MODELS = ["llama3-70b-8192", "llama-3.3-70b-versatile"]
 MAX_HISTORY_LENGTH = 5
