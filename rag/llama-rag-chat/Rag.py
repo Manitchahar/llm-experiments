@@ -10,6 +10,15 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.memory import ConversationBufferWindowMemory
+from unstructured.partition.xlsx import partition_xlsx
+
+# ...existing code...
+
+def get_api_key():
+    try:
+        return st.secrets["GROQ_API_KEY"]
+    except KeyError:
+        return os.getenv("GROQ_API_KEY")
 
 # Load environment variables
 load_dotenv()
@@ -17,9 +26,9 @@ load_dotenv()
 st.warning("This application is currently in beta phase. Some features may be experimental.")
 
 # Constants
-GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
+GROQ_API_KEY = get_api_key()
 if not GROQ_API_KEY:
-    raise ValueError("GROQ_API_KEY not found in environment variables")
+    raise ValueError("GROQ_API_KEY not found in environment variables or Streamlit secrets")
 
 AVAILABLE_MODELS = ["llama3-70b-8192", "llama-3.3-70b-versatile"]
 MAX_HISTORY_LENGTH = 5
