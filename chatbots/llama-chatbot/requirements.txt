@@ -1,4 +1,5 @@
+
 streamlit
 httpx
 groq
-langchain_community
+python-dotenv
