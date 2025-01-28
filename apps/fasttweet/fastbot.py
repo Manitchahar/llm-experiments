@@ -120,7 +120,7 @@ def generate_tweet(topic: str):
 if __name__ == "__main__":
     st.set_page_config(page_title="TweetBot", page_icon="🐦")
     
-    st.title("🐦 TweetBot - AI Tweet Generator")
+    st.title("🐦 TweetJet - AI Tweet Generator")
     st.write("Generate engaging tweets with AI assistance")
     
     # User input
