@@ -12,9 +12,6 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 if not GROQ_API_KEY:
     raise ValueError("GROQ_API_KEY not found in environment variables")
 client = Groq(api_key=GROQ_API_KEY)
-# **Security Note:**  For production, remove or comment out the following line to enable proper SSL certificate verification.
-# Disabling SSL verification is insecure and should only be used for local development if absolutely necessary.
-# client._client._transport = httpx.HTTPTransport(verify=False)
 
 # Model options - Limited to specified models
 model_options = {
@@ -23,7 +20,7 @@ model_options = {
 }
 
 # Default model name
-default_model_name = "Llama3.3-70B-Versatile" # User-friendly default name
+default_model_name = "Llama3.3-70B-Versatile" 
 model_name = model_options[default_model_name] # Initialize with API identifier
 
 # Response options
