@@ -133,26 +133,28 @@ st.markdown(
 # Sidebar for settings
 with st.sidebar:
     st.header("Settings")
-    model_selector_key = "model_selector"
-    selected_model_name = st.selectbox(
-        "Choose Model:",
-        options=list(model_options.keys()),
-        index=list(model_options.keys()).index(default_model_name), # Set default by user-friendly name
-        key=model_selector_key
-    )
-    model_name = model_options[selected_model_name] # Update model_name with API identifier
 
-    st.write(f"Current Model: {selected_model_name}")
+    with st.expander("Model Selection", expanded=True): # Model settings expander (initially expanded)
+        model_selector_key = "model_selector"
+        selected_model_name = st.selectbox(
+            "Choose Model:",
+            options=list(model_options.keys()),
+            index=list(model_options.keys()).index(default_model_name),
+            key=model_selector_key
+        )
+        model_name = model_options[selected_model_name]
+        st.markdown(f"**Current Model:** {selected_model_name}") # Use markdown for bold text
 
-    selected_option = st.radio("Choose response length:", ["Short", "Balanced", "Long"])
-    st.write(f"Response Length: {selected_option}")
-    st.write(f"max_tokens: {response_options[selected_option]['max_tokens']}")
-    st.write(f"temperature: {response_options[selected_option]['temperature']}")
-    st.write(f"top_p: {response_options[selected_option]['top_p']}")
+    with st.expander("Response Options"): # Response options expander (initially collapsed)
+        selected_option = st.radio("Choose response length:", ["Short", "Balanced", "Long"])
+        st.markdown(f"**Response Length:** {selected_option}") # Use markdown for bold text
+        st.markdown(f"**max_tokens:** {response_options[selected_option]['max_tokens']}") # Use markdown for bold text
+        st.markdown(f"**temperature:** {response_options[selected_option]['temperature']}") # Use markdown for bold text
+        st.markdown(f"**top_p:** {response_options[selected_option]['top_p']}") # Use markdown for bold text
 
     if st.button("Clear Chat"):
         st.session_state.conversation_history = []
-        st.rerun() # Rerun to clear chat immediately
+        st.rerun()
 
 
 # Input form container at the top
