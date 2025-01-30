@@ -16,7 +16,7 @@ client = Groq(api_key=GROQ_API_KEY)
 # Model options - Limited to specified models
 model_options = {
     "Llama3.3-70B-Versatile": "llama-3.3-70b-versatile",
-    "DeepSeek-V2-70B": "deepseek-r1-distill-llama-70b" # User-friendly name, API identifier
+    "DeepSeek-r1-70B": "deepseek-r1-distill-llama-70b" # User-friendly name, API identifier
 }
 
 # Default model name
