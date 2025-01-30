@@ -12,10 +12,19 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 if not GROQ_API_KEY:
     raise ValueError("GROQ_API_KEY not found in environment variables")
 client = Groq(api_key=GROQ_API_KEY)
-client._client._transport = httpx.HTTPTransport(verify=False)
+# **Security Note:**  For production, remove or comment out the following line to enable proper SSL certificate verification.
+# Disabling SSL verification is insecure and should only be used for local development if absolutely necessary.
+# client._client._transport = httpx.HTTPTransport(verify=False)
 
-# Model name
-model_name = "llama-3.3-70b-versatile"
+# Model options - Limited to specified models
+model_options = {
+    "Llama3.3-70B-Versatile": "llama-3.3-70b-versatile",
+    "DeepSeek-V2-70B": "deepseek-r1-distill-llama-70b" # User-friendly name, API identifier
+}
+
+# Default model name
+default_model_name = "Llama3.3-70B-Versatile" # User-friendly default name
+model_name = model_options[default_model_name] # Initialize with API identifier
 
 # Response options
 response_options = {
@@ -24,10 +33,26 @@ response_options = {
     "Long": {"max_tokens": 2048, "temperature": 0.8, "top_p": 0.8}
 }
 
-def get_completion(messages, temperature, top_p, max_tokens, stream=False):
+def get_completion(messages, model, temperature, top_p, max_tokens, stream=False):
+    """
+    Calls the Groq API to get a chat completion.
+
+    Args:
+        messages (list): List of message dictionaries for the conversation history.
+        model (str): The model name to use.
+        temperature (float): Temperature parameter for generation.
+        top_p (float): Top_p parameter for generation.
+        max_tokens (int): Maximum tokens in the response.
+        stream (bool): Whether to use streaming.
+
+    Returns:
+        str or Iterable: Completion content if not streaming, otherwise stream of completion chunks.
+                       Returns an error message string if an exception occurs during non-streaming,
+                       and None for stream on error (with error message displayed via st.error).
+    """
     try:
         completion = client.chat.completions.create(
-            model=model_name,
+            model=model,
             messages=messages,
             temperature=temperature,
             max_tokens=max_tokens,
@@ -35,15 +60,19 @@ def get_completion(messages, temperature, top_p, max_tokens, stream=False):
             stream=stream,
             stop=None,
         )
-        
+
         if not stream:
             return completion.choices[0].message.content
         return completion
 
     except Exception as e:
+        if stream:
+            st.error(f"Error during streaming: {str(e)}")
+            return None # Signal error during streaming by returning None
         return f"An error occurred: {str(e)}"
 
-# Initialize session state
+
+# Initialize session state for conversation history
 if 'conversation_history' not in st.session_state:
     st.session_state.conversation_history = []
 
@@ -76,7 +105,7 @@ st.markdown(
     .subtitle {
         font-family: 'Inter', sans-serif !important;
         font-size: 24px !important;
-        color: #6B7280 !important; 
+        color: #6B7280 !important;
         text-align: center !important;
         margin-top: -10px !important;
         font-weight: 400 !important;
@@ -95,22 +124,36 @@ st.markdown(
     </style>
     <div>
         <h1 class="title glow" id="title">LLAMA Chat</h1>
-        <p class="subtitle" id="subtitle">Your intelligent assistant powered by LLaMA 3</p>
+        <p class="subtitle" id="subtitle">Your intelligent assistant powered by LLaMA 3 & DeepSeek</p>
     </div>
     """,
     unsafe_allow_html=True
 )
 
-# Sidebar
+# Sidebar for settings
 with st.sidebar:
     st.header("Settings")
+    model_selector_key = "model_selector"
+    selected_model_name = st.selectbox(
+        "Choose Model:",
+        options=list(model_options.keys()),
+        index=list(model_options.keys()).index(default_model_name), # Set default by user-friendly name
+        key=model_selector_key
+    )
+    model_name = model_options[selected_model_name] # Update model_name with API identifier
+
+    st.write(f"Current Model: {selected_model_name}")
+
     selected_option = st.radio("Choose response length:", ["Short", "Balanced", "Long"])
-    st.write(f"Current Settings: {selected_option}")
+    st.write(f"Response Length: {selected_option}")
     st.write(f"max_tokens: {response_options[selected_option]['max_tokens']}")
     st.write(f"temperature: {response_options[selected_option]['temperature']}")
     st.write(f"top_p: {response_options[selected_option]['top_p']}")
+
     if st.button("Clear Chat"):
         st.session_state.conversation_history = []
+        st.rerun() # Rerun to clear chat immediately
+
 
 # Input form container at the top
 with st.form(key="chat_form", clear_on_submit=True):
@@ -119,42 +162,51 @@ with st.form(key="chat_form", clear_on_submit=True):
 
     if submit_button and user_input.strip():
         st.session_state.conversation_history.append({"role": "user", "content": user_input})
-        
+
         with st.spinner("Thinking..."):
             messages = [
                 {"role": "system", "content": "You are a helpful assistant."},
-                *st.session_state.conversation_history[-5:]
+                *st.session_state.conversation_history[-5:] # Keep last 5 messages for context
             ]
-            
-            # Get parameters based on selected option
+
+            # Get parameters based on selected response length option
             params = response_options[selected_option]
-            
-            # Pass parameters to get_completion with streaming enabled
+
+            # Get completion from Groq API with streaming
             response = get_completion(
                 messages,
+                model=model_name, # Use selected model_name
                 temperature=params["temperature"],
                 top_p=params["top_p"],
                 max_tokens=params["max_tokens"],
                 stream=True
             )
-            
-            # Initialize a placeholder for the assistant's response
+
+            # Initialize placeholder for streaming response
             assistant_response_placeholder = st.empty()
             assistant_response = ""
-            
-            # Stream the response
-            for chunk in response:
-                if chunk.choices[0].delta.content:
-                    assistant_response += chunk.choices[0].delta.content
-                    assistant_response_placeholder.markdown(assistant_response)
-            
+
+            # Stream the response chunks
+            if response is not None: # Check if response is not None (error case)
+                for chunk in response:
+                    if chunk and chunk.choices[0].delta.content:
+                        assistant_response += chunk.choices[0].delta.content
+                        assistant_response_placeholder.markdown(assistant_response)
+                    elif chunk is None: # Explicitly handle None chunk (error signal) if needed more granularly
+                        break # Exit streaming loop if get_completion returned None
+            # else: response is None, error already displayed by get_completion
+
+
             st.session_state.conversation_history.append({"role": "assistant", "content": assistant_response})
-        
-        st.rerun()
+
+        st.rerun() # Rerun to display new messages
+
 
 # Chat messages container below
 chat_container = st.container()
 with chat_container:
-    for message in reversed(st.session_state.conversation_history):
-        with st.chat_message(message["role"]):
+    if not st.session_state.conversation_history:
+        st.info("Welcome! Choose a model and response length from the sidebar to start chatting.")
+    for message in reversed(st.session_state.conversation_history): # Reverse to show latest at bottom
+        with st.chat_message(message["role"]): # Use st.chat_message for styled chat bubbles
             st.write(message["content"])
