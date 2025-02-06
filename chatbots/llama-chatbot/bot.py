@@ -27,7 +27,7 @@ model_name = model_options[default_model_name] # Initialize with API identifier
 response_options = {
     "Short": {"max_tokens": 256, "temperature": 0.6, "top_p": 0.6},
     "Balanced": {"max_tokens": 1024, "temperature": 0.7, "top_p": 0.7},
-    "Long": {"max_tokens": 2048, "temperature": 0.8, "top_p": 0.8}
+    "Long": {"max_tokens": 5000, "temperature": 0.8, "top_p": 0.8}
 }
 
 def get_completion(messages, model, temperature, top_p, max_tokens, stream=False):
