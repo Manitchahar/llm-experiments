@@ -1,11 +1,15 @@
 from crewai import Agent
 from tools import yt_tool
 from langchain import ChatGroq
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 llm = ChatGroq(
     model="llama-3.3-70b-versatile",
     temperature=0.5,
-    api_key="REDACTED_SECRET"
+    api_key=os.getenv("GROQ_API_KEY")
 )
 
 blog_researcher = Agent(
