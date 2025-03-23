@@ -21,3 +21,6 @@ Requirements: Simulated API calls for sending emails to candidates & hiring team
 4. InterviewScheduler
 Function: Schedules interviews & sends calendar invites
 Requirements: Google Calendar integration (or simulated API)
+
+
+
