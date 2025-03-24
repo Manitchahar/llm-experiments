@@ -2,6 +2,7 @@
 venv/
 env/
 ENV/
+.env
 
 # Python
 __pycache__/
@@ -38,3 +39,10 @@ wheels/
 email.py
 actual.py
 app.py
+tokens.json
+hiring.py
+instructions.md
+jd.py
+resume1.py
+credentials.json
+
