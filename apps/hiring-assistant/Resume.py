@@ -18,10 +18,13 @@ from langchain_google_community import GmailToolkit
 from email.message import EmailMessage
 import base64
 import json
+from dotenv import load_dotenv     # new import
+
+load_dotenv()                      # load .env variables
 
 # --- Constants ---
-GOOGLE_API_KEY = "REDACTED_SECRET"
-GROQ_API_KEY = "REDACTED_SECRET"
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")    # updated to use .env
+GROQ_API_KEY = os.getenv("TRANSFORMER_API_KEY")   # updated to use .env
 NAME_PATTERN = re.compile(r"^(.*?)\n")
 EMAIL_PATTERN = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b")
 PHONE_PATTERN = re.compile(r"\b\d{10}\b")
@@ -152,10 +155,22 @@ if page == "JD Generator":
     skills = st.text_area("Skills (comma-separated)")
     experience = st.number_input("Experience (years)", min_value=0)
 
-    if st.button("Generate Job Description"):
+    # Create two columns for buttons
+    col1, col2 = st.columns(2)
+    with col1:
+        generate_clicked = st.button("Generate Job Description")
+    with col2:
+        # Only show transfer button if we have a generated JD
+        if 'generated_jd' in st.session_state:
+            if st.button("Transfer to Resume Ranker ➡️"):
+                st.session_state.job_description = st.session_state.generated_jd
+                st.success("Transferred! Go to Resume Ranker")
+
+    if generate_clicked:
         if job_title and skills and experience:
             try:
                 job_description = llm_chain.run(job_title=job_title, skills=skills, experience=experience)
+                st.session_state.generated_jd = job_description
                 st.subheader("Generated Job Description")
                 st.write(job_description)
             except Exception as e:
@@ -166,8 +181,14 @@ if page == "JD Generator":
 # Resume Ranker Page
 elif page == "Resume Ranker":
     st.title("Resume Ranker")
+    default_jd = st.session_state.get("job_description", "")
+    
+    # Clear transfer message after 3 seconds if it exists
+    if "job_description" in st.session_state:
+        st.success("Job description received from JD Generator!")
+        
     uploaded_files = st.file_uploader("Upload PDF Resumes", type=["pdf"], accept_multiple_files=True)
-    job_description = st.text_area("Paste Job Description", height=200)
+    job_description = st.text_area("Paste Job Description", height=200, value=default_jd)
 
     if st.button("Rank Resumes"):
         if uploaded_files and job_description:
