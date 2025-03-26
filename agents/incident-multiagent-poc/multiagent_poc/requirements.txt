@@ -1,5 +1,7 @@
 phidata
-chainlit
+streamlit
 google-generativeai
 pydantic
 python-dotenv
+pypdf
+chromadb

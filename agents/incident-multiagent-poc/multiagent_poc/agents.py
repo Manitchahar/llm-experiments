@@ -11,6 +11,9 @@ from pydantic import BaseModel, Field
 # Load environment variables (for GOOGLE_API_KEY)
 load_dotenv()
 
+# --- Constants ---
+GEMINI_MODEL_NAME = "gemini-2.0-flash-lite"
+
 # --- Agent Definitions ---
 
 class IncidentContext(BaseModel):
@@ -21,7 +24,7 @@ class TriageAgent(Assistant):
     def __init__(self, **kwargs):
         super().__init__(
             name="TriageAgent",
-            llm=Gemini(model="gemini-pro"),
+            llm=Gemini(model=GEMINI_MODEL_NAME),
             description="You are an expert incident triage specialist. Analyze the user's incident description and determine its severity and key context.",
             output_model=IncidentContext,
             instructions=[
@@ -71,7 +74,7 @@ class ResolutionCoachAgent(Assistant):
      def __init__(self, **kwargs):
         super().__init__(
             name="ResolutionCoachAgent",
-            llm=Gemini(model="gemini-pro"),
+            llm=Gemini(model=GEMINI_MODEL_NAME),
             description="You are an expert troubleshooting coach. Synthesize information to provide actionable resolution steps.",
             instructions=[
                 "Receive the original incident description, triage context, knowledge base info, and external search results.",
@@ -101,39 +104,13 @@ class ResolutionCoachAgent(Assistant):
 
         Based on all the above information, provide a step-by-step troubleshooting guide:
         """
-        return self.run(prompt)
-
-# --- Documentation Agent ---
-
-class DocumentationAgent:
-    def __init__(self, file_path: str = "resolutions.json"):
-        self.file_path = file_path
-
-    def log_resolution(self, incident_description: str, steps: str):
-        """Logs the incident and its resolution steps to a JSON file."""
-        print(f"--- Documentation Agent logging to: {self.file_path} ---")
-        log_entry = {
-            "incident": incident_description,
-            "resolution_steps": steps,
-            "timestamp": __import__('datetime').datetime.now().isoformat()
-        }
-        try:
-            data = []
-            if os.path.exists(self.file_path):
-                with open(self.file_path, 'r') as f:
-                    try:
-                        data = json.load(f)
-                        if not isinstance(data, list): # Ensure it's a list
-                            data = [data]
-                    except json.JSONDecodeError:
-                        print(f"Warning: Could not decode existing JSON in {self.file_path}. Starting fresh list.")
-                        data = [] # Reset if file is corrupt
-            data.append(log_entry)
-            with open(self.file_path, 'w') as f:
-                json.dump(data, f, indent=2)
-            print("--- Logging successful ---")
-        except Exception as e:
-            print(f"Error logging resolution: {e}")
+        response = self.run(prompt)
+        if hasattr(response, '__iter__') and not isinstance(response, str):
+            # If it's an iterator (like a generator), consume it and join
+            return "".join(response)
+        else:
+            # Otherwise, assume it's already a string
+            return response
 
 # Example Usage (for testing purposes)
 if __name__ == "__main__":
@@ -158,8 +135,5 @@ if __name__ == "__main__":
         steps = coach_agent.generate_steps(test_incident, context, knowledge, search)
         print(f"Resolution Steps:\n{steps}")
 
-        print("\n--- Testing Documentation Agent ---")
-        doc_agent = DocumentationAgent()
-        doc_agent.log_resolution(test_incident, steps)
     else:
         print("Triage failed, cannot proceed.")
