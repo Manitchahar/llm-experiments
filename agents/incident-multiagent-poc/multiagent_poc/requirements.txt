@@ -1,0 +1,5 @@
+phidata
+chainlit
+google-generativeai
+pydantic
+python-dotenv
