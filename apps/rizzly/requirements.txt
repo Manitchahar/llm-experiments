@@ -3,3 +3,5 @@ langchain
 langchain-groq
 groq
 python-dotenv
+pytesseract
+Pillow
