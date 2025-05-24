@@ -2,6 +2,7 @@ import streamlit as st
 import os
 from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer, util
+from streamlit.runtime.caching import cache_resource
 import numpy as np
 import tempfile
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -29,6 +30,11 @@ if "vector_store" not in st.session_state:
 st.set_page_config(page_title="RAG with Semantic Chunking", layout="centered")
 st.title("RAG with Semantic Chunking")
 
+@cache_resource
+def get_embedding_model():
+    """Cache the SentenceTransformer model instance."""
+    return SentenceTransformer('all-MiniLM-L6-v2')
+
 def create_semantic_chunks(text):
     """
     Create semantically meaningful chunks using recursive splitting and semantic verification
@@ -43,7 +49,7 @@ def create_semantic_chunks(text):
     initial_chunks = text_splitter.split_text(text)
     
     # Semantic verification using sentence embeddings
-    model = SentenceTransformer('all-MiniLM-L6-v2')
+    model = get_embedding_model()
     sentences = nltk.sent_tokenize(text)
     if not sentences: # Handle case where text results in no sentences
         return initial_chunks if initial_chunks else []
@@ -85,7 +91,7 @@ def process_document(file):
     # For Chroma, SentenceTransformer can be passed directly as the embedding function
     # if we ensure the model is loaded once or passed correctly.
     # Langchain's Chroma wrapper handles this.
-    embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+    embedding_model = get_embedding_model()
     
     if st.session_state["vector_store"] is None:
         # Chroma uses an embedding function that takes a list of texts and returns embeddings.

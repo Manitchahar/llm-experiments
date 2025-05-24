@@ -14,6 +14,9 @@ st.set_page_config(page_title="Mini ChatGPT", layout="centered") # Made title co
 GROQ_API_KEY = os.getenv('GROQ_API_KEY', '')
 MODEL = "qwen-qwq-32b"
 
+# Shared constant for <think> tag regex pattern
+THINK_TAG_PATTERN = r"<think>(.*?)</think>"
+
 def format_reasoning_response(thinking_content):
     """Basic formatting for thinking content (e.g., stripping whitespace)."""
     return thinking_content.strip()
@@ -29,8 +32,7 @@ def display_message(message):
 
 def display_assistant_message(content):
     """Display assistant message with thinking content if present, with status box for all assistant messages."""
-    pattern = r"<think>(.*?)</think>"
-    think_match = re.search(pattern, content, re.DOTALL)
+    think_match = re.search(THINK_TAG_PATTERN, content, re.DOTALL)
     if think_match:
         think_content = think_match.group(1)
         response_content = content.replace(f"<think>{think_content}</think>", "")
