@@ -72,7 +72,7 @@ def search_courses(topic: str) -> list:
 
 # Modified Groq LLM Wrapper
 class GroqLLM(LLM):
-    model: str = "llama-3.3-70b-specdec"
+    model: str = "llama-3.3-70b-versatile"
     temperature: int = 1
     max_tokens: int = 5096
 
