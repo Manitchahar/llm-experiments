@@ -1,14 +1,39 @@
 
+# Environment variables
+.env
+
+# Python
 __pycache__/
 *.py[cod]
-.env
-.venv
+*$py.class
+*.pyc
 venv/
+.venv/
+env/
 ENV/
-.idea/
-.vscode/
-*.log
-.DS_Store
 
-GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Streamlit
+.streamlit/
+
+# Vector stores
+*.index
+*.pkl
+faiss_index/
+chroma_db/
+
+# Temporary files
+temp/
+tmp/
