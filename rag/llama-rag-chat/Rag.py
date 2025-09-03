@@ -63,18 +63,21 @@ behavior_presets = {
 }
 
 class PDFQA:
-    @staticmethod
-    @st.cache_resource
-    def get_embeddings():
-        """Cached embeddings initialization"""
-        return HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2",
-            model_kwargs={'device': 'cpu'}
-        )
-
     def __init__(self):
         self.initialize_session_state()
-        self.embeddings = PDFQA.get_embeddings()
+        # Try to use real embeddings, fall back to graceful error handling
+        try:
+            from langchain_huggingface import HuggingFaceEmbeddings
+            self.embeddings = HuggingFaceEmbeddings(
+                model_name="sentence-transformers/all-MiniLM-L6-v2",
+                model_kwargs={'device': 'cpu'}
+            )
+        except Exception as e:
+            st.error(f"Failed to load embeddings model: {str(e)}")
+            st.error("Please check your internet connection. RAG functionality will be limited.")
+            st.info("You can still use Chat mode without document upload.")
+            # Create a mock embeddings for basic functionality
+            self.embeddings = None
 
     @staticmethod
     def initialize_session_state():
@@ -118,6 +121,11 @@ class PDFQA:
                     chunk_overlap=100  # Increased overlap for better context continuity
                 )
                 texts = text_splitter.split_documents(documents)
+                
+                if not self.embeddings:
+                    st.error("Embeddings model not available. Cannot create vector store.")
+                    return False
+                    
                 st.session_state.vector_store = FAISS.from_documents(texts, self.embeddings)
                 return True
 
@@ -196,6 +204,9 @@ class PDFQA:
         try:
             if not st.session_state.vector_store:
                 return "Please upload and process a file first."
+            
+            if not self.embeddings:
+                return "Embeddings model not available. Please check your internet connection and restart the application."
 
             relevant_docs = st.session_state.vector_store.similarity_search(query, k=5)
             context = "\n".join([doc.page_content for doc in relevant_docs])
