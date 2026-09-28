@@ -1,0 +1,11 @@
+streamlit
+langchain-groq
+langchain-core
+langchain-google-genai
+scikit-learn
+langchain-community
+google-auth-httplib2
+google-auth-oauthlib
+email-validator
+python-dotenv
+pandas
