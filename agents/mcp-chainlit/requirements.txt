@@ -1,0 +1,10 @@
+chainlit
+langchain
+langchain-groq
+groq
+mcp
+fastmcp
+python-dotenv
+langchainhub
+requests
+pyyaml
