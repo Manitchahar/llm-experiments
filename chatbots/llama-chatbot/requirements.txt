@@ -1,0 +1,5 @@
+
+streamlit
+httpx
+groq
+python-dotenv
