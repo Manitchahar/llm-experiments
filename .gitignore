@@ -1,0 +1,25 @@
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+credentials.json
+token.json
+secrets.toml
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+llama/
+
+# Local data
+chroma_db/
+*.sqlite3
+.chainlit/
+.files/
+
+# OS / editor
+.DS_Store
+.vscode/

@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 from langchain_groq import ChatGroq
 from langchain_core.prompts import PromptTemplate
@@ -9,7 +10,7 @@ llm = ChatGroq(
     temperature=0,
     max_tokens=None,
     timeout=None,
-    api_key="REDACTED_SECRET"
+    api_key=os.getenv("GROQ_API_KEY")
 )
 
 # Define the prompt template
